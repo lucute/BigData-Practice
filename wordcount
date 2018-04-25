@@ -1,0 +1,50 @@
+>>> sc = spark.sparkContext
+>>> book = sc.textFile("/Users/lucute/Desktop/Side Project/The _Adventures_of_Tom_Sawyer.txt")      
+>>> words = book.flatMap(lambda line: line.encode('utf-8').replace(",","").replace(".","")./
+    replace(";","").replace("?","").replace("”","").replace("“","").replace("-","").replace("!","")./
+    lower().split(" ")).map(lambda x: (x,1)).filter(lambda(k,v): len(k) > 3).reduceByKey(lambda x,y: x+y)
+>>> for k,v, in sorted(words.collect(), key=lambda word: word[1], reverse = True)[0:5]:
+...     print k,v
+...
+/Users/lucute/spark-2.3.0/python/lib/pyspark.zip/pyspark/shuffle.py:58: UserWarning: Please install psutil to have better support with spilling
+/Users/lucute/spark-2.3.0/python/lib/pyspark.zip/pyspark/shuffle.py:58: UserWarning: Please install psutil to have better support with spilling
+that 902
+with 688
+they 544
+this 332
+then 295
+>>>
+
+#Found top five popular words are all like "stop words", this is not interesting, so I changed filter to the length more than 4
+
+>>> words = book.flatMap(lambda line: line.encode('utf-8').replace(",","").replace(".","")./
+    replace(";","").replace("?","").replace("”","").replace("“","").replace("-","")./
+    replace("!","").lower().split(" ")).map(lambda x: (x,1)).filter(lambda(k,v): len(k) > 4).reduceByKey(lambda x,y: x+y)
+>>> for k,v, in sorted(words.collect(), key=lambda word: word[1], reverse = True)[0:5]:             ...     print k,v                                                                                   ...
+/Users/lucute/spark-2.3.0/python/lib/pyspark.zip/pyspark/shuffle.py:58: UserWarning: Please install psutil to have better support with spilling
+/Users/lucute/spark-2.3.0/python/lib/pyspark.zip/pyspark/shuffle.py:58: UserWarning: Please install psutil to have better support with spilling
+there 292
+would 237
+don't 209
+their 194
+could 180
+
+#The result still contains many stop words, how about get rid of those stop words?
+
+>>> stop = [ "a", "about", "above", "after", "again", "against", "all", "am", "an", "and", "any", "are", "as", "at", "be", "because", "been", "before", "being", "below", "between", "both", "but", "by", "could", "did", "do", "does", "doing", "down", "during", "each", "few", "for", "from", "further", "had", "has", "have", "having", "he", "he'd", "he'll", "he's", "her", "here", "here's", "hers", "herself", "him", "himself", "his", "how", "how's", "i", "i'd", "i'll", "i'm", "i've", "if", "in", "into", "is", "it", "it's", "its", "itself", "let's", "me", "more", "most", "my", "myself", "nor", "of", "on", "once", "only", "or", "other", "ought", "our", "ours", "ourselves", "out", "over", "own", "same", "she", "she'd", "she'll", "she's", "should", "so", "some", "such", "than", "that", "that's", "the", "their", "theirs", "them", "themselves", "then", "there", "there's", "these", "they", "they'd", "they'll", "they're", "they've", "this", "those", "through", "to", "too", "under", "until", "up", "very", "was", "we", "we'd", "we'll", "we're", "we've", "were", "what", "what's", "when", "when's", "where", "where's", "which", "while", "who", "who's", "whom", "why", "why's", "with", "would", "you", "you'd", "you'll", "you're", "you've", "your", "yours", "yourself", "yourselves" ,"not","yes","no"," ",""]
+>>> words = book.flatMap(lambda line: line.encode('utf-8').replace(",","").replace(".","").replace(";","").replace("?","").replace("”","").replace("“","").replace("-","").replace("!","").lower().split(" ")).map(lambda x: (x,1)).filter(lambda(k,v): k not in stop).reduceByKey(lambda x,y: x+y)
+>>> for k,v, in sorted(words.collect(), key=lambda word: word[1], reverse = True)[0:10]:            ...     print k,v                                                                                   ...
+tom 703
+now 261
+said 230
+huck 217
+don't 209
+time 185
+one 181
+got 172
+well 158
+upon 148
+>>>
+
+#It really makes sense that "Tom" is the most popular word in this book!!
+
